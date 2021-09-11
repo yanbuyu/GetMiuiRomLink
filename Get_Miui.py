@@ -1,7 +1,4 @@
-'''
-    Create by ChasonJiang(WhiteJiang)
-        2021.9.11
-'''
+# -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import requests
 import re
