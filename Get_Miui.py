@@ -123,6 +123,5 @@ if __name__ == '__main__':
         sys.exit()
 
 
-    for link in query_rom_link(DEVICE_CODE, "CN", "recovery", "beta"):
-        print(link)
+    print(query_rom_link(DEVICE_CODE, "CN", "recovery", "beta")[0])
     
