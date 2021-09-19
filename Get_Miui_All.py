@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import re
-import requests
+import re, sys, argparse, requests
 from bs4 import BeautifulSoup
 from functools import cmp_to_key
-import sys
 
 class MIUI_ROM:
     def __init__(self):
@@ -120,6 +118,10 @@ class MIUI_ROM:
 
         return rom_link_list
 
+    def query_link_print(self, device, region, cleases, version, lastest):
+        getLinks = MIUI_ROM.query_link(self, device, region, cleases, version)
+        if lastest == 'yes' and getLinks: return([getLinks[0]])
+        return(getLinks)
 
     def f(self,a,b):
         return self.version_comparetor(a.split("/")[3],b.split("/")[3])
@@ -148,21 +150,14 @@ class MIUI_ROM:
 
 if __name__ == '__main__':
 
-    try:
-        DEVICE_CODE = str(sys.argv[1])
-    except IndexError:
-        print('\nUsage: Get_Miui.py <DEVICE_CODE>\n')
-        print('    <DEVICE_CODE>: Device\'s Code eg.umi\n')
-        try:
-            input = raw_input
-        except NameError: pass
-        input('Press ENTER to exit...')
-        sys.exit()
-    
-    region = "CN"
-    rom_cleases = "recovery"
-    rom_version = "beta"
-    miui_rom=MIUI_ROM()
-    rom_link_list = miui_rom.query_link(DEVICE_CODE,region,rom_cleases,rom_version)
-    for link in rom_link_list:
-        print(link)
+    parser = argparse.ArgumentParser(description = '一键获取小米机型更新地址')
+    #type是要传入的参数的数据类型  help是该参数的提示信息
+    parser.add_argument('--device', '-d', type = str, required = True, help = '机型代号, 填写对应机型的代号, 如小米10的代号为umi')
+    parser.add_argument('--region', '-r', type = str, required = False, default = 'CN', help = '地区代号, 请输入地区代号')
+    parser.add_argument('--cleases', '-c', type = str, required = False, default = 'recovery', help = 'ROM包类型, 卡刷包(recovery)/线刷包(fastboot), 绝大部分开发版机型无线刷包')
+    parser.add_argument('--version', '-v', type = str, required = False, default = 'beta', help = 'ROM发版类型, 稳定版(stable)/开发版(beta)')
+    parser.add_argument('--lastest', '-l', type = str, required = False, default = 'no', help = '是否获取最新版, 是(yes)/否(no)')
+
+    args = parser.parse_args()
+    getLinks = MIUI_ROM().query_link_print(args.device, args.region, args.cleases, args.version, args.lastest)
+    [print(link) for link in getLinks]
