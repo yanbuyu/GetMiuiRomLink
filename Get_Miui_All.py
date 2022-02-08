@@ -119,8 +119,22 @@ class MIUI_ROM:
         return rom_link_list
 
     def query_link_print(self, device, region, cleases, version, lastest):
-        getLinks = MIUI_ROM.query_link(self, device, region, cleases, version)
-        if lastest == 'yes' and getLinks: return([getLinks[0]])
+        if version == 'dev':
+            getLinks = MIUI_ROM.query_link(self, device, region, cleases, 'stable')
+        else:
+            getLinks = MIUI_ROM.query_link(self, device, region, cleases, version)
+        getNewLinks = []
+        if version == 'dev':##从稳定版中分离开发版
+            for getLink in getLinks:
+                cuts = getLink.split('/')
+                if cuts and cuts[3].endswith('.DEV'): getNewLinks.append(getLink)
+        elif version == 'stable':
+            for getLink in getLinks:
+                cuts = getLink.split('/')
+                if cuts and not cuts[3].endswith('.DEV'): getNewLinks.append(getLink)
+        if version != 'beta': getLinks = getNewLinks
+        if lastest == 'yes' and getLinks:
+            return([getLinks[0]])
         return(getLinks)
 
     def f(self,a,b):
@@ -155,7 +169,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', '-d', type = str, required = True, help = '机型代号, 填写对应机型的代号, 如小米10的代号为umi')
     parser.add_argument('--region', '-r', type = str, required = False, default = 'CN', help = '地区代号, 请输入地区代号')
     parser.add_argument('--cleases', '-c', type = str, required = False, default = 'recovery', help = 'ROM包类型, 卡刷包(recovery)/线刷包(fastboot), 绝大部分开发版机型无线刷包')
-    parser.add_argument('--version', '-v', type = str, required = False, default = 'beta', help = 'ROM发版类型, 稳定版(stable)/开发版(beta)')
+    parser.add_argument('--version', '-v', type = str, required = False, default = 'beta', help = 'ROM发版类型, 稳定版(stable)/开发版(dev)/内测版(beta)')
     parser.add_argument('--lastest', '-l', type = str, required = False, default = 'no', help = '是否获取最新版, 是(yes)/否(no)')
 
     args = parser.parse_args()
