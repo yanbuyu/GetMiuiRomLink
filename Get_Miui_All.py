@@ -3,6 +3,8 @@ import re, sys, argparse, requests
 from bs4 import BeautifulSoup
 from functools import cmp_to_key
 
+head = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36'}
+
 class MIUI_ROM:
     def __init__(self):
         self.region_map={'国行版': 'CN', '俄罗斯版 (俄版) (RU)': 'RU', '全球版': 'Global', '印度尼西亚版 (印尼版) (ID)': 'ID', '印度版 (IN)': 'IN', '欧洲版 (欧版) (EEA)': 'EEA', '土耳其版 (TR)': 'TR', '台湾版 (台版) (TW)': 'TW', '日本版 (日版) (JP)': 'JP', '新加坡版': 'SG'}
@@ -11,7 +13,8 @@ class MIUI_ROM:
     def get_model_link_table(self):
 
         link = 'https://xiaomirom.com/series/'
-        response = requests.get(link)
+        requests.packages.urllib3.disable_warnings()#屏蔽warning信息
+        response = requests.get(link, headers = head, verify = False)
         if not response.status_code == 200:
             raise RuntimeError(link+" "+"请求异常！")
         soup=BeautifulSoup(response.content,'html.parser')
@@ -40,7 +43,8 @@ class MIUI_ROM:
 
     def get_rom_link(self,model_version_link):
         miui_rom_link ="https://bigota.d.miui.com/"
-        response = requests.get(model_version_link)
+        requests.packages.urllib3.disable_warnings()#屏蔽warning信息
+        response = requests.get(model_version_link, headers = head, verify = False)
         if not response.status_code == 200:
             raise RuntimeError(model_version_link+" "+"请求异常！")
             
