@@ -138,8 +138,11 @@ class MIUI_ROM:
                 if cuts and not cuts[3].endswith('.DEV'): getNewLinks.append(getLink)
         if version != 'beta': getLinks = getNewLinks
         if lastest == 'yes' and getLinks:
-            return([getLinks[0]])
-        return(getLinks)
+            return([getLinks[0].replace('//bigota.d.', '//hugeota.d.')])
+        ##替换//bigota.d.为//hugeota.d.
+        newLinkList = []
+        [newLinkList.append(link.replace('//bigota.d.', '//hugeota.d.')) for link in getLinks]
+        return(newLinkList)
 
     def f(self,a,b):
         return self.version_comparetor(a.split("/")[3],b.split("/")[3])
