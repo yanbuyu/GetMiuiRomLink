@@ -24,7 +24,7 @@ def getOTALinkFromSite(models, version, lastest):
         requests.packages.urllib3.disable_warnings()#屏蔽warning信息
         response = requests.post(url, data = data, headers = headers)
         if response.status_code != 200:
-            printcolor(f"getApkpures: Error, {link} post error!")
+            printcolor(f"getApkpures: Error, {url} post error!")
             continue
         soup = BeautifulSoup(response.content, 'html.parser')
         link_tables = soup.find_all(name = "a", text = "下载ROM")
