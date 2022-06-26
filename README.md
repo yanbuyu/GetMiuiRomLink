@@ -3,7 +3,7 @@
 ## 需要的环境：
    python3
 ## 需要的库：
-   BeautifulSoup4，requests, argparse
+   BeautifulSoup4, requests, argparse
 ## 使用方法：
    1.执行以下代码查看使用说明:
    ```shell

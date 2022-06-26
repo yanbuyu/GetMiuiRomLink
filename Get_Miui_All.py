@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import re, sys, argparse, requests
+import re, sys, argparse, requests, itertools, multiprocessing
+from functools import partial
 from bs4 import BeautifulSoup
 from functools import cmp_to_key
 
@@ -99,7 +100,7 @@ class MIUI_ROM:
             raise KeyError("This region type was not found")
 
         if rom_cleases in rom_link_dic.keys():
-                rom_link_list=rom_link_dic[rom_cleases]
+            rom_link_list=rom_link_dic[rom_cleases]
         else:
             print("Already have:")
             print(list(rom_link_dic.keys()))
@@ -122,13 +123,37 @@ class MIUI_ROM:
 
         return rom_link_list
 
-    def query_link_print(self, device, region, cleases, version, lastest):
-        if version == 'dev':
-            getLinks = MIUI_ROM.query_link(self, device, region, cleases, 'stable')
+    def extendList(self, List, appendList = True, appendOther = False):
+        newList = []
+        for lists in List:
+            if isinstance(lists, list) and appendList:
+                newList.extend(lists)
+            elif appendOther:
+                newList.append(lists)
+        return(newList)
+
+    def query_link_new(self, device, region, cleases, version, lastest):
+        lists = self.query_link(device, region, cleases, version)
+        if lists:
+            if lastest == 'yes':
+                return([lists[0]])
+            else:
+                return(lists)
         else:
-            getLinks = MIUI_ROM.query_link(self, device, region, cleases, version)
+            return([])
+
+    def query_link_print(self, devices, region, cleases, version, lastest):
+        versionTemp = 'stable' if version == 'dev' else version
+        getLinks = []
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())##创建进程池
+        func = partial(self.query_link_new, region = region, cleases = cleases, version = versionTemp, lastest = lastest)##固定不变的参数
+        lists = self.extendList(pool.map(func, devices.split(",")))##向进程池传入函数及其参数，让map执行
+        getLinks.extend(lists)
+        pool.close()##不再创建进程池
+        pool.join()##加入进程池
         getNewLinks = []
-        if version == 'dev':##从稳定版中分离开发版
+        ##从稳定版中分离开发版
+        if version == 'dev':
             for getLink in getLinks:
                 cuts = getLink.split('/')
                 if cuts and cuts[3].endswith('.DEV'): getNewLinks.append(getLink)
@@ -136,9 +161,8 @@ class MIUI_ROM:
             for getLink in getLinks:
                 cuts = getLink.split('/')
                 if cuts and not cuts[3].endswith('.DEV'): getNewLinks.append(getLink)
+        ##非内测版处理
         if version != 'beta': getLinks = getNewLinks
-        if lastest == 'yes' and getLinks:
-            return([getLinks[0].replace('//bigota.d.', '//hugeota.d.')])
         ##替换//bigota.d.为//hugeota.d.
         newLinkList = []
         [newLinkList.append(link.replace('//bigota.d.', '//hugeota.d.')) for link in getLinks]
@@ -173,7 +197,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description = '一键获取小米机型更新地址')
     #type是要传入的参数的数据类型  help是该参数的提示信息
-    parser.add_argument('--device', '-d', type = str, required = True, help = '机型代号, 填写对应机型的代号, 如小米10的代号为umi')
+    parser.add_argument('--device', '-d', type = str, required = True, help = '机型代号 格式：umi, 多个：umi,cmi,lmi')
     parser.add_argument('--region', '-r', type = str, required = False, default = 'CN', help = '地区代号, 请输入地区代号')
     parser.add_argument('--cleases', '-c', type = str, required = False, default = 'recovery', help = 'ROM包类型, 卡刷包(recovery)/线刷包(fastboot), 绝大部分开发版机型无线刷包')
     parser.add_argument('--version', '-v', type = str, required = False, default = 'beta', help = 'ROM发版类型, 稳定版(stable)/开发版(dev)/内测版(beta)')
